@@ -7,10 +7,22 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model Coin {
-  id               String             @id
-  name             String
-  symbol           String
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+model UserCoinList {
+  id        String    @id @default(uuid())
+  slug      String
+  name      String
+  symbol    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  coinData  CoinData?
+}
+
+model CoinData {
+  coinList   UserCoinList @relation(fields: [coinListid], references: [id], onDelete: Cascade)
+  coinListid String       @unique
+  price      Float
+  marketCap  Float?
+  volume     Float?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 }
