@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { DialogContentProps } from '@radix-ui/react-dialog';
+import { useEffect, useState } from 'react';
 
 interface ModalProps extends DialogContentProps{
   title: string;
@@ -27,6 +28,17 @@ export const Modal: React.FC<ModalProps> = ({
   className,
   ...DialogProps
 }) => {
+  
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return null;
+  }
+
   const onChange = (open: boolean) => {
     if (!open) {
       onClose();
