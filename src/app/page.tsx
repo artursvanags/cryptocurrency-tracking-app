@@ -3,7 +3,10 @@ import CryptocurrencyTableTemplate from '@/components/cryptocurrency-table/templ
 export default function Home() {
   return (
     <div className="flex max-h-screen min-h-screen">
-      <CryptocurrencyTableTemplate />
+      <div className='mx-auto my-auto'>
+        <CryptocurrencyTableTemplate />
+      </div>
+      
     </div>
   );
 }
