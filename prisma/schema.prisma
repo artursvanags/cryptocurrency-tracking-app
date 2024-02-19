@@ -7,7 +7,7 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model UserCoinList {
+model CoinWatchlist {
   id        String    @id @default(uuid())
   slug      String
   name      String
@@ -15,10 +15,11 @@ model UserCoinList {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   coinData  CoinData?
+	@@map("UserCoinList")
 }
 
 model CoinData {
-  coinList   UserCoinList @relation(fields: [coinListid], references: [id], onDelete: Cascade)
+  coinList   CoinWatchlist @relation(fields: [coinListid], references: [id], onDelete: Cascade)
   coinListid String       @unique
   price      Float
   marketCap  Float?
