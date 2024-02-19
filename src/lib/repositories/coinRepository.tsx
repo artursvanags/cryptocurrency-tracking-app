@@ -1,62 +1,57 @@
+'use server';
 import prismadb from '@/lib/database';
-import { CoinDTO, CreateCoinDTO } from '@/types';
-import { Coin } from '@prisma/client';
 
-export function toDtoMapper(coin: Coin) {
-  return {
-    id: coin.id,
-    name: coin.name,
-    symbol: coin.symbol,
-  };
+import { APICoinList, CoinDTO, createCoinDTO } from '@/types';
+import { toDtoMapper } from '@/lib/utils';
+
+export async function getAPICoins(): Promise<APICoinList[]> {
+  const response = await fetch(
+    'https://api.coingecko.com/api/v3/coins/list?include_platform=true',
+    // 1 hour cache
+    { next: { revalidate: 3600 } },
+  );
+  const data = await response.json();
+  return data;
 }
 
-export async function getCoin(id: string): Promise<CoinDTO> {
-  const item = await prismadb.coin.findFirst({
-    where: {
-      id: id,
-    },
-  });
-  if (!item) {
-    throw new Error('could not find item');
-  }
-  return toDtoMapper(item);
+export async function getAPICoinData(ids: string[]) {
+  const response = await fetch(
+    `https://api.coingecko.com/api/v3/coins/markets?vs_currency=eur&ids=${ids}&locale=en`,
+    // no cache
+    { cache: 'no-cache' },
+  );
+  const data = await response.json();
+  return data;
 }
 
-export async function getCoins(): Promise<CoinDTO[]> {
-  const items = await prismadb.coin.findMany();
-  return items.map(toDtoMapper);
-}
-
-export async function addCoin(coin: CreateCoinDTO): Promise<void> {
-  await prismadb.coin.create({
+export async function createCoin(coin: APICoinList): Promise<void> {
+  await prismadb.coinWatchlist.create({
     data: {
-      id: coin.id,
+      slug: coin.id,
       name: coin.name,
       symbol: coin.symbol,
     },
   });
 }
 
-export async function addCoins(coins: CreateCoinDTO[]): Promise<void> {
-  await prismadb.$transaction(async () => {
-    for (const coin of coins) {
-      await addCoin(coin);
-    }
-  });
+export async function getCoins(): Promise<CoinDTO[]> {
+  const items = await prismadb.coinWatchlist.findMany();
+  return items.map(toDtoMapper);
 }
 
-export async function deleteCoin(id: CoinDTO['id']): Promise<void> {
-  await prismadb.coin.delete({
+/* export async function getUserCoin(slug: string): Promise<CoinDTO> {
+  const item = await prismadb.coinWatchlist.findFirst({
     where: {
-      id: id,
+      slug: slug,
     },
   });
-}
+  if (!item) {
+    throw new Error('could not find item');
+  }
+  return toDtoMapper(item);
+} */
 
-export async function deleteCoins(ids: CoinDTO['id'][]): Promise<void> {
-  await prismadb.$transaction(async () => {
-    for (const id of ids) {
-      await deleteCoin(id);
-    }
-  });
-}
+/* export async function getUserCoins(): Promise<CoinDTO[]> {
+  const items = await prismadb.coinWatchlist.findMany();
+  return items.map(toDtoMapper);
+} */
