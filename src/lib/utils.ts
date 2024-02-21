@@ -8,6 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function toDtoMapper(coin: CoinDTO) {
   return {
+    id: coin.id,
     slug: coin.slug,
     name: coin.name,
     symbol: coin.symbol,
