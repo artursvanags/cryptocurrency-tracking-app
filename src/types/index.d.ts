@@ -11,7 +11,7 @@ export type APICoinList = {
   id: string;
   name: string;
   symbol: string;
-  platforms?: Record<string, string>;
+  platforms?: Records<string, string>;
 };
 
 export type createCoinDTO = APICoinList;

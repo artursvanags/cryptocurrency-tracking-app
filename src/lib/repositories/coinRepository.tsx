@@ -3,15 +3,20 @@ import prismadb from '@/lib/database';
 
 import { APICoinList, CoinDTO, createCoinDTO } from '@/types';
 import { toDtoMapper } from '@/lib/utils';
+import { getLargeDataFromRedis, redis, setLargeDataInRedis } from '../redis';
 
-export async function getAPICoins(): Promise<APICoinList[]> {
-  const response = await fetch(
-    'https://api.coingecko.com/api/v3/coins/list?include_platform=true',
-    // 1 hour cache
-    { next: { revalidate: 3600 } },
-  );
-  const data = await response.json();
-  return data;
+export async function fetchAPICoins(): Promise<APICoinList[]> {
+  const cachedCoinList = await getLargeDataFromRedis('coinList');
+  if (cachedCoinList) {
+    return cachedCoinList;
+  } else {
+    const response = await fetch(
+      'https://api.coingecko.com/api/v3/coins/list?include_platform=true',
+    );
+    const data = await response.json();
+    await setLargeDataInRedis('coinList', data);
+    return data;
+  }
 }
 
 export async function getAPICoinData(ids: string[]) {

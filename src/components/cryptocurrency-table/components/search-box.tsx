@@ -1,9 +1,9 @@
 'use client';
-
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { debounce } from '@/lib/helpers/debounce';
 import { colorizeSearchTerm } from '@/lib/helpers/colorizeSearchTerm';
-import { UserCoinList } from '@prisma/client';
-import { useEffect, useState } from 'react';
 
 import { Input, InputProps } from '@/components/ui/input';
 import {
@@ -14,70 +14,88 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import prismadb from '@/lib/database';
+import { Skeleton } from '@/components/ui/skeleton';
+import { APICoinList } from '@/types';
+import { useCallback } from 'react';
+
+const schema = z.object({
+  search: z.string().min(2).max(5),
+});
+type searchSchema = z.infer<typeof schema>;
 
 interface SearchBoxProps extends InputProps {
-  data: () => Promise<UserCoinList[]>;
+  data: APICoinList[];
+  loading: boolean;
+  searchQuery: string | null;
+  setSearchQuery: (searchTerm: string | null) => void;
 }
 
-const SearchBox = (props: SearchBoxProps) => {
-  const [coins, setCoins] = useState<UserCoinList[]>([]);
-  const [filteredCoins, setFilteredCoins] = useState<UserCoinList[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  // Fetch mounted coins from data API
-  useEffect(() => {
-    const fetchData = async () => {
-      const allCoins = await props.data();
-      setCoins(allCoins);
-      setFilteredCoins(allCoins);
-    };
-    fetchData();
-  }, []);
-
-  const handleSelect = async (coin: UserCoinList) => {
-    await prismadb.userCoinList.create({
-      data: {
-        slug: coin.id,
-        name: coin.name,
-        symbol: coin.symbol,
-      },
-    });
-    console.log('Coin added to watchlist:', coin.name, coin.symbol);
-  };
-
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const newSearchTerm = e.target.value.toLowerCase();
-    setSearchTerm(newSearchTerm);
-
-    // Input character filter logic
-    if (newSearchTerm.length >= 2) {
-      const newFilteredCoins = coins
-        .filter((coin) => coin.name.toLowerCase().includes(newSearchTerm))
+const SearchBox = ({
+  data,
+  loading,
+  searchQuery,
+  setSearchQuery,
+  ...inputProps
+}: SearchBoxProps) => {
+  const form = useForm<searchSchema>({
+    resolver: zodResolver(schema),
+    defaultValues: { search: searchQuery || '' },
+  });
+  const searchRows = () => {
+    if (searchQuery && searchQuery.length >= 2) {
+      return data
+        .filter((coin) => coin.name.toLowerCase().includes(searchQuery))
         .sort((a, b) => {
-          if (a.name.toLowerCase() === newSearchTerm) return -1;
-          if (b.name.toLowerCase() === newSearchTerm) return 1;
+          if (a.name.toLowerCase() === searchQuery) return -1;
+          if (b.name.toLowerCase() === searchQuery) return 1;
           return a.name.localeCompare(b.name);
         });
-      setFilteredCoins(newFilteredCoins);
-    } else {
-      setFilteredCoins([]);
-    }
+    } else return data.sort((a, b) => a.name.localeCompare(b.name));
   };
 
-  // Debounce input to prevent too many API calls from user input
-  const debouncedHandleInput = debounce(handleInput, 200);
+  const debouncedHandleInput = useCallback(
+    debounce((value) => {
+      setSearchQuery(value);
+    }, 200),
+    [], // Dependencies array, empty means the function is created once
+  );
 
   return (
     <div className="space-y-2">
-      <Input
-        {...props}
-        placeholder="Start searching coins"
-        onInput={debouncedHandleInput}
-      />
-      {searchTerm.length >= 2 && (
+      <Form {...form}>
+        <form>
+          <FormField
+            control={form.control}
+            name="search"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    {...inputProps}
+                    {...field}
+                    type="search"
+                    placeholder="Start searching coins"
+                    onChange={(e) => {
+                      field.onChange(e);
+                      debouncedHandleInput(e.target.value);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
+      {searchQuery && searchQuery.length >= 2 && (
         <>
           <ScrollArea className="relative rounded-sm border">
             <div className="max-h-[320px]">
@@ -90,35 +108,45 @@ const SearchBox = (props: SearchBoxProps) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredCoins.length > 0 ? (
-                    filteredCoins.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        onClick={() => handleSelect(row)}
-                        className="cursor-pointer"
-                      >
+                  {loading ? (
+                    Array.from(Array(3)).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="w-[100px]">
+                          <Skeleton className="h-6 w-full rounded" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-6 w-full rounded" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Skeleton className="h-6 w-full rounded" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : data.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="h-24 text-center">
+                        No results.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    searchRows().map((row) => (
+                      <TableRow key={row.id} className={`cursor-pointer `}>
                         <TableCell>{row.symbol.toUpperCase()}</TableCell>
                         <TableCell>
-                          {colorizeSearchTerm(row.name, searchTerm)}
+                          {colorizeSearchTerm(row.name, searchQuery)}
                         </TableCell>
                         <TableCell className="text-right">
                           <span className="text-green-500">Active</span>
                         </TableCell>
                       </TableRow>
                     ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={3} className="h-24 text-center">
-                        No results.
-                      </TableCell>
-                    </TableRow>
                   )}
                 </TableBody>
               </Table>
             </div>
           </ScrollArea>
           <div className="flex items-center justify-center text-sm text-muted-foreground">
-            {filteredCoins.length} - Search Results
+            {searchRows().length} - Search Results
           </div>
         </>
       )}

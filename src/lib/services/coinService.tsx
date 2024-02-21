@@ -1,9 +1,14 @@
-import { createCoin, getAPICoinData, getAPICoins, getCoins } from '@/lib/repositories/coinRepository';
+import {
+  createCoin,
+  getAPICoinData,
+  fetchAPICoins,
+  getCoins,
+} from '@/lib/repositories/coinRepository';
 import { APICoinList, CoinDTO, createCoinDTO } from '@/types';
 
 export class CoinService {
-  async getAPICoins() {
-    return getAPICoins();
+  async fetchCoins() {
+    return fetchAPICoins();
   }
 
   async getAPICoinData(ids: string[]) {
@@ -15,9 +20,7 @@ export class CoinService {
   async addCoin(coinData: APICoinList) {
     const watchlist = await this.getWatchlistCoins();
 
-    const coinExists = watchlist.some(
-      (coin) => coin.slug === coinData.id,
-    );
+    const coinExists = watchlist.some((coin) => coin.slug === coinData.id);
 
     if (coinExists) {
       //TO-DO, make notifiation on client-side
