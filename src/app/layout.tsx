@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { siteConfig } from '@/config/site';
 
 import { Metadata } from 'next';
+import { Toaster } from '@/components/ui/toaster';
 
 interface RootLayoutProps {
   children: React.ReactNode;
@@ -41,9 +42,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
           fontHeading.variable,
         )}
       >
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <main className="relative">{children}</main>
           <TailwindIndicator />
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
