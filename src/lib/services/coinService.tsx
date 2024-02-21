@@ -1,8 +1,9 @@
 import {
   createCoin,
-  getAPICoinData,
+  fetchAPICoinData,
   fetchAPICoins,
   getCoins,
+  removeCoin,
 } from '@/lib/repositories/coinRepository';
 import { APICoinList, CoinDTO, createCoinDTO } from '@/types';
 
@@ -11,19 +12,19 @@ export class CoinService {
     return fetchAPICoins();
   }
 
-  async getAPICoinData(ids: string[]) {
-    return getAPICoinData(ids);
+  async fetchCoinData(ids: string[]) {
+    return fetchAPICoinData(ids);
   }
-  async getWatchlistCoins() {
+
+  async getCoins() {
     return getCoins();
   }
-  async addCoin(coinData: APICoinList) {
-    const watchlist = await this.getWatchlistCoins();
-
+  async addItem(coinData: APICoinList) {
+    const watchlist = await this.getCoins();
     const coinExists = watchlist.some((coin) => coin.slug === coinData.id);
 
     if (coinExists) {
-      //TO-DO, make notifiation on client-side
+      //TO-DO, make notification on client-side
       throw new Error(`Coin with symbol ${coinData.symbol} already exists.`);
     }
 
@@ -32,7 +33,9 @@ export class CoinService {
       name: coinData.name,
       symbol: coinData.symbol,
     };
-
     await createCoin(selectedCoin);
+  }
+  async removeItem(id: CoinDTO['id']) {
+    await removeCoin(id);
   }
 }
