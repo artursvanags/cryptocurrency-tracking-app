@@ -1,10 +1,11 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 
 import { APICoinList, CoinDTO } from '@/types';
 import { CoinService } from '@/lib/services/coinService';
 
 import { colorizeSearchTerm } from '@/lib/helpers/colorizeSearchTerm';
-import { debounce } from '@/lib/helpers/debounce';
 
 import {
   Table,
@@ -35,18 +36,15 @@ export const DataTable = ({
 
   const { toast } = useToast();
 
-  const [toggleLoading, setToggleLoading] = useState(false);
+
   const [watchlistData, setWatchlistData] = useState<CoinDTO[]>([]);
 
   const fetchData = async () => {
-    setToggleLoading(true);
     try {
       const data = await service.getCoins();
       setWatchlistData(data);
     } catch (error) {
       console.error(error);
-    } finally {
-      setToggleLoading(false);
     }
   };
 
