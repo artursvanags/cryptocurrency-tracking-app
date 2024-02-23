@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
-import { useCallback } from  'react';
+import { useCallback } from 'react';
 
 import { debounce } from '@/lib/helpers/debounce';
 
@@ -40,7 +40,7 @@ const SearchInput = ({
     debounce((value) => {
       setSearchQuery(value);
     }, 200),
-    [],
+    [setSearchQuery],
   );
 
   return (

@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { APICoinList, CoinDTO } from '@/types';
-import { CoinService } from '@/lib/services/coinService';
-
+import { APICoinList, CoinDTO, CoinWatchlistItemWithCoinData } from '@/types';
 import { colorizeSearchTerm } from '@/lib/helpers/colorizeSearchTerm';
 
 import {
@@ -21,66 +19,62 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
+import { addItemAction } from '@/lib/actions/addItemAction';
+import { removeItemAction } from '@/lib/actions/removeItemAction';
+
 interface DataTableProps {
+  fetchWatchlist: () => void;
+  watchlistData: CoinWatchlistItemWithCoinData[];
   queryData: APICoinList[];
   searchQuery: string | null;
   loading: boolean;
 }
 
 export const DataTable = ({
+  fetchWatchlist,
+  watchlistData,
   queryData,
   searchQuery,
   loading,
 }: DataTableProps) => {
-  const service = new CoinService();
-
   const { toast } = useToast();
 
-
-  const [watchlistData, setWatchlistData] = useState<CoinDTO[]>([]);
-
-  const fetchData = async () => {
+  const addItem = async (data: APICoinList) => {
     try {
-      const data = await service.getCoins();
-      setWatchlistData(data);
+      await addItemAction(data);
+      toast({
+        title: 'Success',
+        description: `Added ${data.name} to your watchlist.`,
+      });
     } catch (error) {
-      console.error(error);
+      toast({
+        title: 'Error',
+        variant: 'destructive',
+        description: error instanceof Error && error.message,
+      });
+    } finally {
+      fetchWatchlist();
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const toggleItem = async (
-    data: APICoinList,
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    const button = event.currentTarget;
-    button.disabled = true;
+  const removeItem = async (data: APICoinList) => {
+    const coinID = watchlistData.find(
+      (watchlistCoin) => watchlistCoin.slug === data.id,
+    );
     try {
-      const watchlist = await service.getCoins();
-      const coinExists = watchlist.some((coin) => coin.slug === data.id);
-
-      if (coinExists) {
-        const selectedCoin = watchlist.find((coin) => coin.slug === data.id);
-        if (selectedCoin) {
-          await service.removeItem(selectedCoin.id);
-        }
-      } else {
-        await service.addItem(data);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
+      if (coinID) await removeItemAction(coinID);
       toast({
         title: 'Success',
-        description: `${
-          isCoinInWatchlist(data) ? 'Removed' : 'Added'
-        } ${data.name} to your watchlist.`,
+        description: `Removed ${data.name} to your watchlist.`,
       });
-      fetchData();
-      button.disabled = false;
+    } catch (error) {
+      toast({
+        title: 'Error',
+        variant: 'destructive',
+        description: error instanceof Error && error.message,
+      });
+    } finally {
+      fetchWatchlist();
     }
   };
 
@@ -118,7 +112,7 @@ export const DataTable = ({
                 <TableBody>
                   {loading ? (
                     Array.from(Array(3)).map((_, index) => (
-                      <TableRow key={index}>
+                      <TableRow className="h-4" key={index}>
                         <TableCell className="w-[100px]">
                           <Skeleton className="h-6 w-full rounded" />
                         </TableCell>
@@ -130,7 +124,7 @@ export const DataTable = ({
                         </TableCell>
                       </TableRow>
                     ))
-                  ) : queryData.length === 0 ? (
+                  ) : searchRows().length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={3} className="h-24 text-center">
                         No results.
@@ -138,21 +132,28 @@ export const DataTable = ({
                     </TableRow>
                   ) : (
                     searchRows().map((row) => (
-                      <TableRow key={row.id} className="m-24">
+                      <TableRow key={row.id} className="m-24 h-4">
                         <TableCell>{row.symbol.toUpperCase()}</TableCell>
                         <TableCell>
                           {searchQuery &&
                             colorizeSearchTerm(row.name, searchQuery)}
                         </TableCell>
                         <TableCell className="pr-4 text-right">
-                          <Button
-                            onClick={(event) => toggleItem(row, event)}
-                            variant={
-                              isCoinInWatchlist(row) ? 'destructive' : 'default'
-                            }
-                          >
-                            {isCoinInWatchlist(row) ? 'Remove' : 'Add'}
-                          </Button>
+                          {isCoinInWatchlist(row) ? (
+                            <Button
+                              onClick={() => removeItem(row)}
+                              variant="destructive"
+                            >
+                              Remove
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={() => addItem(row)}
+                              variant="default"
+                            >
+                              Add
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))
@@ -161,9 +162,11 @@ export const DataTable = ({
               </Table>
             </div>
           </ScrollArea>
-          <div className="flex items-center justify-center text-sm text-muted-foreground">
-            {searchRows().length} - Search Results
-          </div>
+          {searchRows().length !== 0 && (
+            <div className="flex items-center justify-center text-sm text-muted-foreground">
+              {searchRows().length} - Search Results
+            </div>
+          )}
         </>
       )}
     </>
