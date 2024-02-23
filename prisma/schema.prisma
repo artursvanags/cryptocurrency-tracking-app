@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model CoinWatchlist {
@@ -13,17 +13,28 @@ model CoinWatchlist {
   name      String
   symbol    String
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
   coinData  CoinData?
-	@@map("UserCoinList")
+
+  @@map("UserCoinList")
 }
 
 model CoinData {
-  coinList   CoinWatchlist @relation(fields: [coinListid], references: [id], onDelete: Cascade)
-  coinListid String       @unique
+  id              String             @id @default(uuid())
+  coinWatchlist   CoinWatchlist?     @relation(fields: [coinWatchlistId], references: [id], onDelete: Cascade)
+  coinWatchlistId String?            @unique
+  priceHistories  CoinPriceHistory[]
+  marketCap       Float?
+  volume          Float?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+}
+
+model CoinPriceHistory {
+  id         String   @id @default(uuid())
   price      Float
-  marketCap  Float?
-  volume     Float?
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  createdAt  DateTime @default(now())
+  coinData   CoinData @relation(fields: [coinDataId], references: [id], onDelete: Cascade)
+  coinDataId String
+
+  @@map("CoinPriceHistory")
 }

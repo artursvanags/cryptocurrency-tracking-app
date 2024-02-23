@@ -1,18 +1,66 @@
-import { CoinData } from "@prisma/client";
+import { CoinData, CoinWatchlist, PriceHistory } from '@prisma/client';
 
-export type CoinDTO = {
+interface CoinDataWithPriceHistory extends CoinData {
+  priceHistories: PriceHistory[];
+}
+
+export interface CoinWatchlistItemWithCoinData extends CoinWatchlist {
+  coinData?: CoinDataWithPriceHistory; 
+}
+
+export interface APICoinList {
   id: string;
-  slug: string;
   name: string;
   symbol: string;
-  coinData?: CoinData;
-};
+}
 
-export type APICoinList = {
+export interface CoinDTO {
   id: string;
   name: string;
   symbol: string;
-  platforms?: Records<string, string>;
-};
+}
 
-export type createCoinDTO = APICoinList;
+export interface CoinDataDTO {
+  marketCap?: number;
+  volume?: number;
+}
+
+export interface CreateCoinDTO {
+  id: string;
+  name: string;
+  symbol: string;
+}
+
+export interface CreateCoinDataDTO {
+  marketCap?: number;
+  volume?: number;
+}
+
+export interface CoinDataAPI {
+  id: string;
+  symbol: string;
+  name: string;
+  image: string;
+  current_price: number;
+  market_cap: number;
+  market_cap_rank: number;
+  fully_diluted_valuation: number;
+  total_volume: number;
+  high_24h: number;
+  low_24h: number;
+  price_change_24h: number;
+  price_change_percentage_24h: number;
+  market_cap_change_24h: number;
+  market_cap_change_percentage_24h: number;
+  circulating_supply: number;
+  total_supply: number;
+  max_supply: number | null;
+  ath: number;
+  ath_change_percentage: number;
+  ath_date: string;
+  atl: number;
+  atl_change_percentage: number;
+  atl_date: string;
+  roi: { times: number; currency: string; percentage: number } | null;
+  last_updated: string;
+}

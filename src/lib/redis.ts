@@ -7,7 +7,14 @@ const getRedisURL = () => {
   throw new Error('REDIS_URL not defined.');
 };
 
-export const redis = new Redis(getRedisURL());
+let redis: Redis;
+
+try {
+  redis = new Redis(getRedisURL());
+} catch (error) {
+  console.error('Failed to connect to Redis:', error);
+  process.exit(1);
+}
 
 export async function setLargeDataInRedis(
   keyBase: string,
