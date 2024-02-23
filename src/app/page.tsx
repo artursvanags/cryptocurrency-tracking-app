@@ -1,10 +1,10 @@
-import CryptocurrencyTableTemplate from '@/components/cryptocurrency-table/template';
+import CryptocurrencyTemplate from '@/components/main/template';
 
 export default function Home() {
   return (
-    <div className="flex max-h-screen min-h-screen">
+    <div className="max-h-screen min-h-screen container">
       <div className="mx-auto my-auto">
-        <CryptocurrencyTableTemplate />
+        <CryptocurrencyTemplate />
       </div>
     </div>
   );
