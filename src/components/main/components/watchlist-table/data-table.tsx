@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter, useSearchParams } from 'next/navigation';
+
 import {
   ColumnDef,
   SortingState,
@@ -17,9 +19,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { DataTableToolbar } from '@/components/main/components/watchlist-table/data-table-toolbar';
+import ViewItemsModal from '@/components/main/components/view-items-modal';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -33,6 +36,8 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: 'createdAt', desc: true },
   ]);
+  const router = useRouter();
+  const searchParams = new URLSearchParams(useSearchParams());
 
   const table = useReactTable({
     data,
@@ -68,12 +73,19 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
+                  className="cursor-pointer"
                   data-state={row.getIsSelected() && 'selected'}
+                  onClick={() => {
+                    //@ts-ignore
+                    searchParams.set('item', row.original.id);
+                    router.push(`?${searchParams.toString().toLowerCase()}`);
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell className="p-3" key={cell.id}>
@@ -98,6 +110,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
+      <ViewItemsModal />
     </div>
   );
 }
