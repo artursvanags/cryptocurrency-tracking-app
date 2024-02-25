@@ -1,13 +1,13 @@
 'use server';
 
-import { CoinService } from '@/lib/services/coinService';
+import { coinService } from '@/lib/services/coinService';
 import { APICoinList } from '@/types';
 import { revalidatePath } from 'next/cache';
 
 export async function addItemAction(coinData: APICoinList) {
-  const { createCoin } = new CoinService();
+  const { addCoinToQueue } = coinService;
   try {
-    await createCoin(coinData);
+    await addCoinToQueue(coinData);
   } catch (error) {
     console.error(error);
     throw new Error(`Failed to add the coin to your watchlist.`);

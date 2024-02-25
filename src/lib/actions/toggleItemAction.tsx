@@ -1,11 +1,11 @@
 'use server';
 
-import { CoinService } from '@/lib/services/coinService';
+import { coinService } from '@/lib/services/coinService';
 import { APICoinList } from '@/types';
 import { revalidatePath } from 'next/cache';
 
 export async function toggleItemAction(coinData: APICoinList) {
-  const {  getWatchlistCoins, createCoin, removeCoin } = new CoinService();
+  const {  getWatchlistCoins, createCoin, removeCoin } = coinService;
   try {
     const watchlist = await getWatchlistCoins();
     const coinExists = watchlist.some((coin) => coin.slug === coinData.id);
