@@ -10,7 +10,7 @@ import { Modal } from '@/components/ui/modal';
 
 import AddItemsComponentProps from '@/components/main/components/search-table/add-items-component';
 
-const AddCoinsModal = () => {
+const AddCoinsModalButton = () => {
   const router = useRouter();
   const searchParams = new URLSearchParams(useSearchParams());
   const search = searchParams.get('search');
@@ -20,8 +20,12 @@ const AddCoinsModal = () => {
 
   const onModalClose = () => {
     const debouncedSetSearchQuery = debounce(() => setSearchQuery(null), 300);
+    const debouncedUpdate = debounce(() => {
+      router.refresh();
+    }, 5000);
     setIsModalOpen(false);
     debouncedSetSearchQuery();
+    debouncedUpdate();
   };
 
   useEffect(() => {
@@ -45,10 +49,13 @@ const AddCoinsModal = () => {
         onClose={onModalClose}
         className="max-h-screen xl:min-w-[800px]"
       >
-        <AddItemsComponentProps searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <AddItemsComponentProps
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
       </Modal>
       <Button onClick={() => setIsModalOpen(true)}>Add Coins</Button>
     </>
   );
 };
-export default AddCoinsModal;
+export default AddCoinsModalButton;
