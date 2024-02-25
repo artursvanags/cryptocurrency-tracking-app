@@ -20,6 +20,23 @@ export async function getCoins(): Promise<CoinWatchlist[]> {
 }
 
 /**
+ * Fetches a specific coin from the database, including its associated coin data and price histories.
+ * @param id - The ID of the coin to fetch.
+ */
+export async function getCoin(id: string): Promise<CoinWatchlist | null> {
+  return prismadb.coinWatchlist.findUnique({
+    where: { id },
+    include: {
+      coinData: {
+        include: {
+          priceHistories: true,
+        },
+      },
+    },
+  });
+}
+
+/**
  * Creates a new coin in the database.
  * @param coin - The coin information to create.
  * @returns The ID of the created coin.
@@ -33,16 +50,6 @@ export async function createCoin(coin: APICoinList): Promise<string> {
     },
   });
   return createdCoin.id;
-}
-
-/**
- * Removes a coin and its associated data from the database based on the coin's ID.
- * @param id - The ID of the coin to remove.
- */
-export async function removeCoin(id: string): Promise<void> {
-  await prismadb.coinWatchlist.delete({
-    where: { id },
-  });
 }
 
 /**
@@ -84,7 +91,10 @@ export async function updateCoinData(
  * @param price - The price to record.
  * @param coinDataId - The ID of the coin data to associate the price with.
  */
-export async function createPrice(price: number, coinDataId: string): Promise<void> {
+export async function createPrice(
+  price: number,
+  coinDataId: string,
+): Promise<void> {
   await prismadb.coinPriceHistory.create({
     data: {
       price,
@@ -92,12 +102,16 @@ export async function createPrice(price: number, coinDataId: string): Promise<vo
     },
   });
 }
+
 /**
  * Prunes price histories for a specific coin data, keeping only a specified number of records.
  * @param coinDataId - The ID of the coin data.
  * @param keep - The number of price histories to keep.
  */
-export async function prunePriceHistories(coinDataId: string, keep: number): Promise<void> {
+export async function prunePriceHistories(
+  coinDataId: string,
+  keep: number,
+): Promise<void> {
   const priceHistories = await prismadb.coinPriceHistory.findMany({
     where: { coinDataId: coinDataId },
     orderBy: {
@@ -106,11 +120,40 @@ export async function prunePriceHistories(coinDataId: string, keep: number): Pro
   });
 
   if (priceHistories.length > keep) {
-    const idsToDelete = priceHistories.slice(keep).map(history => history.id);
+    const idsToDelete = priceHistories.slice(keep).map((history) => history.id);
     await prismadb.coinPriceHistory.deleteMany({
       where: {
         id: { in: idsToDelete },
       },
     });
   }
+}
+
+/**
+ * Removes a coin and its associated data from the database based on the coin's ID.
+ * @param id - The ID of the coin to remove.
+ */
+export async function removeCoin(id: string): Promise<void> {
+  await prismadb.coinWatchlist.delete({
+    where: { id },
+  });
+}
+
+/**
+ * Removes multiple coins and their associated data from the database based on their IDs.
+ * @param ids - The IDs of the coins to remove.
+ */
+export async function removeMultipleCoins(ids: string[]): Promise<void> {
+  await prismadb.coinWatchlist.deleteMany({
+    where: {
+      id: { in: ids },
+    },
+  });
+}
+
+/**
+ * Removes all coins and their associated data from the database.
+ */
+export async function removeAllCoins(): Promise<void> {
+  await prismadb.coinWatchlist.deleteMany();
 }
