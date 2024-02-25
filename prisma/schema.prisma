@@ -19,14 +19,21 @@ model CoinWatchlist {
 }
 
 model CoinData {
-  id              String             @id @default(uuid())
-  coinWatchlist   CoinWatchlist?     @relation(fields: [coinWatchlistId], references: [id], onDelete: Cascade)
-  coinWatchlistId String?            @unique
-  priceHistories  CoinPriceHistory[]
-  marketCap       Float?
-  volume          Float?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  id                String             @id @default(uuid())
+  coinWatchlist     CoinWatchlist?     @relation(fields: [coinWatchlistId], references: [id], onDelete: Cascade)
+  coinWatchlistId   String?            @unique
+  priceHistories    CoinPriceHistory[]
+  marketCap         Float?
+  volume            Float?
+  totalSupply       Float?
+  maxSupply         Float?
+  totalVolume       Float?
+  circulatingSupply Float?
+  high24h           Float?
+  low24h            Float?
+  marketCapRank     Int?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }
 
 model CoinPriceHistory {
