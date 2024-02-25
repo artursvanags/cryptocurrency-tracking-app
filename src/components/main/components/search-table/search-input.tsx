@@ -19,6 +19,7 @@ import {
 const schema = z.object({
   search: z.string().min(2).max(5),
 });
+
 type searchSchema = z.infer<typeof schema>;
 
 interface SearchBoxProps extends InputProps {

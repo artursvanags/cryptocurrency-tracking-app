@@ -62,10 +62,10 @@ export const DataTable = ({
       (watchlistCoin) => watchlistCoin.slug === data.id,
     );
     try {
-      if (coinID) await removeItemAction(coinID);
+      if (coinID) await removeItemAction(coinID.id);
       toast({
         title: 'Success',
-        description: `Removed ${data.name} to your watchlist.`,
+        description: `Removed ${data.name} from your watchlist.`,
       });
     } catch (error) {
       toast({
