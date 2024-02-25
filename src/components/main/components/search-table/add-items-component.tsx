@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { CoinService } from '@/lib/services/coinService';
+import { coinService } from '@/lib/services/coinService';
 import { APICoinList, CoinWatchlistItemWithCoinData } from '@/types';
 
 import SearchInput from './search-input';
@@ -22,15 +22,17 @@ const AddItemsComponent = ({
   const [loading, setLoading] = useState(false);
 
   const [queryData, setQueryData] = useState<APICoinList[]>([]);
-  const [watchlistData, setWatchlistData] = useState<CoinWatchlistItemWithCoinData[]>([]);
+  const [watchlistData, setWatchlistData] = useState<
+    CoinWatchlistItemWithCoinData[]
+  >([]);
 
-  const service = new CoinService();
+  const { fetchCoinsFromAPI, getWatchlistCoins } = coinService;
 
   const fetchQuery = async () => {
     try {
       if (queryData.length === 0) {
         setLoading(true);
-        const data = await service.fetchCoinsFromAPI();
+        const data = await fetchCoinsFromAPI();
         setQueryData(data);
       }
     } catch (error) {
@@ -46,7 +48,7 @@ const AddItemsComponent = ({
   const fetchWatchlist = async () => {
     try {
       console.log('fetching watchlist');
-      const data = await service.getWatchlistCoins();
+      const data = await getWatchlistCoins();
       setWatchlistData(data);
     } catch (error) {
       toast({
