@@ -1,17 +1,14 @@
 import { CoinData, CoinWatchlist, PriceHistory } from '@prisma/client';
 
-interface CoinDataWithPriceHistory extends CoinData {
-  priceHistories: PriceHistory[];
-}
-
 export interface CoinWatchlistItemWithCoinData extends CoinWatchlist {
-  coinData?: CoinDataWithPriceHistory; 
+  coinData?: CoinData & { priceHistories?: PriceHistory[] };
 }
 
 export interface APICoinList {
   id: string;
   name: string;
   symbol: string;
+  platforms?: string[];
 }
 
 export interface CoinDTO {
@@ -23,6 +20,13 @@ export interface CoinDTO {
 export interface CoinDataDTO {
   marketCap?: number;
   volume?: number;
+  totalSupply?: number;
+  maxSupply?: number | null;
+  totalVolume?: number;
+  circulatingSupply?: number;
+  high24h?: number;
+  low24h?: number;
+  marketCapRank?: number;
 }
 
 export interface CreateCoinDTO {
@@ -34,6 +38,13 @@ export interface CreateCoinDTO {
 export interface CreateCoinDataDTO {
   marketCap?: number;
   volume?: number;
+  totalSupply?: number;
+  maxSupply?: number | null;
+  totalVolume?: number;
+  circulatingSupply?: number;
+  high24h?: number;
+  low24h?: number;
+  marketCapRank?: number;
 }
 
 export interface CoinDataAPI {
@@ -63,4 +74,9 @@ export interface CoinDataAPI {
   atl_date: string;
   roi: { times: number; currency: string; percentage: number } | null;
   last_updated: string;
+}
+
+export interface Settings {
+  cronInterval: number;
+  pro_api: string | undefined;
 }
