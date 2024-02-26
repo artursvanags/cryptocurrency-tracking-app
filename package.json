@@ -9,11 +9,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "build:start:prod": "npm run build && npx prisma migrate dev --name init &&npx prisma db seed && npm run together",
+    "build:start:prod": "npm run build && npx prisma migrate dev --name init &&npx prisma db seed && npm run together:prod",
     "lint": "next lint",
-    "start:migrate:prod": "npx prisma migrate deploy && npm run start:prod",
     "worker": "ts-node -r tsconfig-paths/register --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\", \\\"esModuleInterop\\\":true}\" src/lib/workers/cron.js",
-    "together": "npm-run-all --parallel start worker"
+    "together:dev": "npm-run-all --parallel dev worker",
+    "together:prod": "npm-run-all --parallel start worker"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
