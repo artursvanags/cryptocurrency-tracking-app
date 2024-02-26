@@ -38,7 +38,7 @@ import { Settings } from '@/types';
 import { pingAPI } from '@/lib/repositories/apiRepository';
 import { removeAllItemsAction } from '@/lib/actions/removeAllitems';
 
-const thresholdOptions = [10, 25, 50, 75, 100];
+const intervalOptions = [10, 20, 30, 40, 50, 60];
 
 const schema = z.object({
   interval: z.number(),
@@ -222,7 +222,7 @@ const SettingsTemplate = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {thresholdOptions.map((option) => (
+                  {intervalOptions.map((option) => (
                     <SelectItem key={option} value={option.toString()}>
                       {option} seconds
                     </SelectItem>
