@@ -62,6 +62,14 @@ export async function createCoinData(
   coinData: CoinDataDTO,
   coinWatchlistId: string,
 ): Promise<string> {
+  const coinWatchlist = await prismadb.coinWatchlist.findUnique({
+    where: { id: coinWatchlistId },
+  });
+
+  if (!coinWatchlist) {
+    throw new Error(`Coin with ID ${coinWatchlistId} does not exist.`);
+  }
+
   const createdCoinData = await prismadb.coinData.create({
     data: {
       ...coinData,
