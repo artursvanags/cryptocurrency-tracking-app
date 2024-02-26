@@ -2,11 +2,11 @@ const cron = require('node-cron');
 
 import {
   getCoins,
-  updateCoinData,
   createPrice,
   createCoinData,
+  updateCoinData,
 } from '@/lib/repositories/coinRepository';
-
+import { mapAPICoinDataToDTO } from '@/lib/mapper';
 import { fetchAPICoinData } from '@/lib/repositories/apiRepository';
 import { prunePriceHistories } from '@/lib/repositories/coinRepository';
 import { settingsService } from '@/lib/services/settingsService';
@@ -35,26 +35,14 @@ async function updateMarketDataBatch() {
 
         const coinMarketData = marketData.find((data) => data.id === coin.slug);
         if (!coinMarketData) continue;
-
+        const mappedCoin = mapAPICoinDataToDTO(coinMarketData);
         if (!coin.coinData) {
-          const coinDataId = await createCoinData(
-            {
-              marketCap: coinMarketData.market_cap,
-              volume: coinMarketData.total_volume,
-            },
-            coin.id,
-          );
+          const coinDataId = await createCoinData(mappedCoin, coin.id);
 
           coin.coinData = { id: coinDataId };
           console.log(`Created coin data for coin: ${coin.name}`);
         } else {
-          await updateCoinData(
-            {
-              marketCap: coinMarketData.market_cap,
-              volume: coinMarketData.total_volume,
-            },
-            coin.coinData.id,
-          );
+          await updateCoinData(mappedCoin, coin.coinData.id);
           console.log(`Updated coin data for coin: ${coin.name}`);
         }
         await createPrice(coinMarketData.current_price, coin.coinData.id);
