@@ -104,7 +104,7 @@ export const ItemDetails = ({
             <div className="rounded-lg border p-4">
               <div className="pb-2 text-2xl font-bold">Price History</div>
               <div className="space-y-2">
-                {itemData.coinData?.priceHistories?.map((item, index) => (
+                {itemData.coinData?.priceHistories?.sort((a, b) => b.createdAt - a.createdAt).map((item, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between rounded border p-1"
