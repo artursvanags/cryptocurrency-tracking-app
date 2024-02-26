@@ -39,4 +39,6 @@ next-env.d.ts
 # SQlite
 *.sqlite3
 *.sqlite3-journal
-dev.db
+
+# prisma
+/prisma/*.db
